@@ -7,29 +7,73 @@ import dummyData from './dummy-data'
 import endpoint from './endpoint'
 import './styles.scss';
 
+const initialState = {
+    result: null,
+    loading: true,
+    error: null,
+}
+
+const fetchReducer = (state, action) => {
+    console.log(action)
+    if (action.type === 'LOADING') {
+        return {
+            result: null,
+            loading: true,
+            error: null
+        }
+    }
+
+    if (action.type === 'RESPONSE_COMPLETE') {
+        return {
+            result: action.payload.response,
+            loading: false,
+            error: null,
+        }
+    }
+
+    if (action.type === "ERROR") {
+        return {
+            result: null,
+            loading: true,
+            error: action.payload.error,
+        }
+    }
+
+    return state;
+}
 
 const useFetch = url => {
-    const [response, setResponse] = useState(null)
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [state, dispatch] = React.useReducer(fetchReducer, initialState)
 
     React.useEffect(() => {
-        setLoading(true);
-        setResponse([]);
-        setError(null);
+        dispatch({ type: "LOADING" })
 
-        fetch(endpoint + '/characters')
-            .then(response => response.json())
-            .then(response => {
-                setLoading(false);
-                setResponse(response)
-            })
-            .catch(err => {
-                setLoading(false);
-                setError(err);
-            })
+        const fetchUrl = async () => {
+            try {
+                const response = await fetch(url)
+                const data = await response.json();
+                dispatch({ type: "RESPONSE_COMPLETE", payload: { response } })
+
+            } catch (error) {
+                dispatch({ type: "ERROR", payload: { error } })
+              
+            }
+        }
+
+        fetchUrl()
+
+        //     fetch(endpoint + '/characters')
+        //         .then(response => response.json())
+        //         .then(response => {
+        //             setLoading(false);
+        //             setResponse(response)
+        //         })
+        //         .catch(err => {
+        //             setLoading(false);
+        //             setError(err);
+        //         })
     }, [])
-    return [response, loading, error]
+    return [state.result, state.loading,state.error]
 }
 
 const Application = () => {
@@ -37,7 +81,7 @@ const Application = () => {
     const characters = (response && response.characters) || [];
 
     return (
-        <diV className="Application">
+        <div className="Application">
             <header>
                 <h1>Star wars Characters</h1>
             </header>
@@ -52,7 +96,7 @@ const Application = () => {
                     {error && <p className="error">{error.message}</p>}
                 </section>
             </main>
-        </diV>
+        </div>
     )
 }
 
