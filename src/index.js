@@ -8,29 +8,33 @@ import endpoint from './endpoint'
 import './styles.scss';
 
 
-const Application = () => {
-    const [characters, setCharacters] = useState(dummyData);
+const useFetch = url => {
+    const [response, setResponse] = useState(null)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-
     React.useEffect(() => {
         setLoading(true);
-        setCharacters([]);
+        setResponse([]);
         setError(null);
-
 
         fetch(endpoint + '/characters')
             .then(response => response.json())
             .then(response => {
                 setLoading(false);
-                setCharacters(response.characters)
+                setResponse(response)
             })
             .catch(err => {
                 setLoading(false);
                 setError(err);
             })
     }, [])
+    return [response, loading, error]
+}
+
+const Application = () => {
+    const [response, loading, error] = useFetch(endpoint + '/characters');
+    const characters = (response && response.characters) || [];
 
     return (
         <diV className="Application">
@@ -45,7 +49,7 @@ const Application = () => {
                             <CharacterList characters={characters} />
                         )
                     }
-                    {error && <p className="error">{error.message}</p> }
+                    {error && <p className="error">{error.message}</p>}
                 </section>
             </main>
         </diV>
