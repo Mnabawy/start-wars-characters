@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useReducer } from 'react'
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router } from 'react-router-dom';
 
@@ -7,17 +7,11 @@ import dummyData from './dummy-data'
 import endpoint from './endpoint'
 import './styles.scss';
 
-const initialState = {
-    result: null,
-    loading: true,
-    error: null,
-}
+const reducer = (state, action) => {
 
-const fetchReducer = (state, action) => {
-    console.log(action)
-    if (action.type === 'LOADING') {
+    if (action.type === 'FETCHING') {
         return {
-            result: null,
+            characters: [],
             loading: true,
             error: null
         }
@@ -25,7 +19,7 @@ const fetchReducer = (state, action) => {
 
     if (action.type === 'RESPONSE_COMPLETE') {
         return {
-            result: action.payload.response,
+            characters: action.payload.characters,
             loading: false,
             error: null,
         }
@@ -33,8 +27,8 @@ const fetchReducer = (state, action) => {
 
     if (action.type === "ERROR") {
         return {
-            result: null,
-            loading: true,
+            characters: [],
+            loading: false,
             error: action.payload.error,
         }
     }
@@ -42,43 +36,15 @@ const fetchReducer = (state, action) => {
     return state;
 }
 
-const useFetch = url => {
-    const [state, dispatch] = React.useReducer(fetchReducer, initialState)
-
-    React.useEffect(() => {
-        dispatch({ type: "LOADING" })
-
-        const fetchUrl = async () => {
-            try {
-                const response = await fetch(url)
-                const data = await response.json();
-                dispatch({ type: "RESPONSE_COMPLETE", payload: { response } })
-
-            } catch (error) {
-                dispatch({ type: "ERROR", payload: { error } })
-              
-            }
-        }
-
-        fetchUrl()
-
-        //     fetch(endpoint + '/characters')
-        //         .then(response => response.json())
-        //         .then(response => {
-        //             setLoading(false);
-        //             setResponse(response)
-        //         })
-        //         .catch(err => {
-        //             setLoading(false);
-        //             setError(err);
-        //         })
-    }, [])
-    return [state.result, state.loading,state.error]
+const initialState = {
+    characters: [],
+    loading: false,
+    error: null,
 }
 
 const Application = () => {
-    const [response, loading, error] = useFetch(endpoint + '/characters');
-    const characters = (response && response.characters) || [];
+    const [state, dispatch] = useReducer(reducer, initialState)
+    const { characters } = state;
 
     return (
         <div className="Application">
@@ -87,13 +53,9 @@ const Application = () => {
             </header>
             <main>
                 <section className="sidebar">
-                    {loading ? (
-                        <p> Loading </p>
-                    ) : (
-                            <CharacterList characters={characters} />
-                        )
-                    }
-                    {error && <p className="error">{error.message}</p>}
+                    <button onClick={() => {}}>Fetch Characters</button>
+                    <CharacterList characters={characters} />
+
                 </section>
             </main>
         </div>
