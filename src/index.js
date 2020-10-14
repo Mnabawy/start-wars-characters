@@ -2,8 +2,9 @@ import React, { useReducer } from 'react'
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router } from 'react-router-dom';
 
+import isFuntion from 'lodash/isFunction';
+
 import CharacterList from './CharacterList'
-import dummyData from './dummy-data'
 import endpoint from './endpoint'
 import './styles.scss';
 
@@ -42,6 +43,23 @@ const initialState = {
     error: null,
 }
 
+const useThunkReducer = (reducer, initialState) => {
+    const [state, dispatch] = useReducer(reducer, initialState)
+
+    const enhancedDispatch = action => {
+
+        if(isFuntion(action)){
+            action(dispatch)
+        }else{
+            dispatch(action)
+        }
+
+        dispatch(action);
+    }
+
+    return [state, dispatch]
+}
+
 const Application = () => {
     const [state, dispatch] = useReducer(reducer, initialState)
     const { characters } = state;
@@ -53,7 +71,7 @@ const Application = () => {
             </header>
             <main>
                 <section className="sidebar">
-                    <button onClick={() => {}}>Fetch Characters</button>
+                    <button onClick={() => { }}>Fetch Characters</button>
                     <CharacterList characters={characters} />
 
                 </section>
