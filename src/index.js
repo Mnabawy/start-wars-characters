@@ -7,11 +7,10 @@ import isFuntion from 'lodash/isFunction';
 import CharacterList from './CharacterList'
 import endpoint from './endpoint'
 import './styles.scss';
-import { dispatch } from 'rxjs/internal/observable/pairs';
 
 const reducer = (state, action) => {
-
-    if (action.type === 'FETCHING') {
+    console.log(action);
+    if (action.type === 'LOADING') {
         return {
             characters: [],
             loading: true,
@@ -38,18 +37,20 @@ const reducer = (state, action) => {
     return state;
 }
 
-const fetchCharacters = (dispatch) => {
+const fetchCharacters = dispatch => {
 
-    dispatch({ type: "LOADING" })
-    fetch(endpoint, '/characters')
+    dispatch({ type: "LOADING" });
+    fetch(endpoint + '/characters')
         .then(response => response.json())
-        .then(response => dispatch({
-            type: 'RESPONSE_COMPLETED', payload: {
-                characters: response.characters
-            }
-        })
+        .then(response =>
+            dispatch({
+                type: 'RESPONSE_COMPLETE',
+                payload: {
+                    characters: response.characters
+                }
+            })
         )
-        .catch(error => { dispatch({ type: 'ERROR', payload: { error } }) })
+        .catch(error => dispatch({ type: 'ERROR', payload: { error } }))
 }
 
 const initialState = {
@@ -61,18 +62,18 @@ const initialState = {
 const useThunkReducer = (reducer, initialState) => {
     const [state, dispatch] = useReducer(reducer, initialState)
 
-    const enhancedDispatch = action => {
+    const enhancedDispatch = React.useCallback(
+        action => {
+            if (isFuntion(action)) {
+                action(dispatch)
+            } else {
+                dispatch(action)
+            }
+        },
+        [dispatch],
 
-        if (isFuntion(action)) {
-            action(dispatch)
-        } else {
-            dispatch(action)
-        }
-
-        dispatch(action);
-    }
-
-    return [state, dispatch]
+    )
+    return [state, enhancedDispatch]
 }
 
 const Application = () => {
@@ -80,11 +81,8 @@ const Application = () => {
     const { characters } = state;
 
     useEffect(() => {
-        dispatch((disp) => {
-
-        })
-
-    }, []);
+        dispatch(dispatch => { })
+    },[dispatch]);
 
     return (
         <div className="Application">
@@ -93,7 +91,8 @@ const Application = () => {
             </header>
             <main>
                 <section className="sidebar">
-                    <button onClick={() => { }}>Fetch Characters</button>
+                    <button onClick={() => dispatch(fetchCharacters)}>
+                        Fetch Characters</button>
                     <CharacterList characters={characters} />
 
                 </section>
