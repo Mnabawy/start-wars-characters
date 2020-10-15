@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react'
+import React, { useEffect, useReducer } from 'react'
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import isFuntion from 'lodash/isFunction';
 import CharacterList from './CharacterList'
 import endpoint from './endpoint'
 import './styles.scss';
+import { dispatch } from 'rxjs/internal/observable/pairs';
 
 const reducer = (state, action) => {
 
@@ -37,6 +38,20 @@ const reducer = (state, action) => {
     return state;
 }
 
+const fetchCharacters = (dispatch) => {
+
+    dispatch({ type: "LOADING" })
+    fetch(endpoint, '/characters')
+        .then(response => response.json())
+        .then(response => dispatch({
+            type: 'RESPONSE_COMPLETED', payload: {
+                characters: response.characters
+            }
+        })
+        )
+        .catch(error => { dispatch({ type: 'ERROR', payload: { error } }) })
+}
+
 const initialState = {
     characters: [],
     loading: false,
@@ -48,9 +63,9 @@ const useThunkReducer = (reducer, initialState) => {
 
     const enhancedDispatch = action => {
 
-        if(isFuntion(action)){
+        if (isFuntion(action)) {
             action(dispatch)
-        }else{
+        } else {
             dispatch(action)
         }
 
@@ -61,8 +76,15 @@ const useThunkReducer = (reducer, initialState) => {
 }
 
 const Application = () => {
-    const [state, dispatch] = useReducer(reducer, initialState)
+    const [state, dispatch] = useThunkReducer(reducer, initialState)
     const { characters } = state;
+
+    useEffect(() => {
+        dispatch((disp) => {
+
+        })
+
+    }, []);
 
     return (
         <div className="Application">
