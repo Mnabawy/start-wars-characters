@@ -1,10 +1,11 @@
 import React, { useEffect, useReducer } from 'react'
 import ReactDOM from "react-dom";
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 import isFuntion from 'lodash/isFunction';
 
 import CharacterList from './CharacterList'
+import CharacterView from './CharacterView'
 import endpoint from './endpoint'
 import './styles.scss';
 
@@ -82,7 +83,7 @@ const Application = () => {
 
     useEffect(() => {
         dispatch(dispatch => { })
-    },[dispatch]);
+    }, [dispatch]);
 
     return (
         <div className="Application">
@@ -94,7 +95,9 @@ const Application = () => {
                     <button onClick={() => dispatch(fetchCharacters)}>
                         Fetch Characters</button>
                     <CharacterList characters={characters} />
-
+                </section>
+                <section className="CharacterView">
+                    <Route path="/characters/:id" component={CharacterView} />
                 </section>
             </main>
         </div>

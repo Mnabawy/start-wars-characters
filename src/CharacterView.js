@@ -5,6 +5,12 @@ const CharacterView = ({ match }) => {
   const [character, setCharacter] = useState({});
 
   useEffect(() => {
+    fetch(endpoint + '/characters' + match.params.id)
+    .then( response => response.json())
+    .then(response => setCharacter(response.character))
+  }, [match.params.id]);
+
+  useEffect(() => {
     fetch(endpoint + '/characters/' + match.params.id)
       .then(response => response.json())
       .then(response => setCharacter(response.character));
